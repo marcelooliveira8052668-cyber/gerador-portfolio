@@ -1,4 +1,298 @@
-><!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GERADOR DE PORTFÓLIO — preencha as caixas e o site se monta sozinho</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --fundo: #f6f5f2;
+    --papel: #ffffff;
+    --borda: #e2ded7;
+    --tinta: #221f1b;
+    --tinta-2: #5c554d;
+    --tinta-3: #8d857b;
+    --acento: #9a5f3c;
+    --acento-suave: #f7efe9;
+    --ok: #1f7a4d;
+    --ok-suave: #e8f5ee;
+    --alerta: #8a5a00;
+    --alerta-suave: #fff6e0;
+    --erro: #a12b2b;
+    --erro-suave: #fdecec;
+    --raio: 10px;
+  }
+
+  /* ---- painel de escolha de cores ---- */
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 14px; }
+  .preset {
+    display: flex; align-items: center; gap: 7px; cursor: pointer;
+    background: var(--papel); border: 1px solid var(--borda); border-radius: 999px;
+    padding: 4px 12px 4px 5px; font-size: 0.82rem; font-family: inherit; color: var(--tinta-2);
+  }
+  .preset:hover { border-color: var(--acento); }
+  .preset[aria-pressed="true"] { border-color: var(--acento); box-shadow: 0 0 0 2px var(--acento-suave); color: var(--tinta); }
+  .preset .bolas { display: flex; }
+  .preset .bolas i {
+    width: 15px; height: 15px; border-radius: 50%; display: block;
+    border: 1.5px solid #fff; margin-left: -4px;
+  }
+  .preset .bolas i:first-child { margin-left: 0; }
+  .cores { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+  .cor {
+    display: flex; align-items: center; gap: 9px; cursor: pointer;
+    background: var(--papel); border: 1px solid var(--borda);
+    border-radius: var(--raio); padding: 8px 10px;
+  }
+  .cor:hover { border-color: var(--acento); }
+  .cor .amostra { flex: 0 0 auto; }
+  .cor input[type="color"] {
+    width: 34px; height: 34px; padding: 0; border: 1px solid var(--borda);
+    border-radius: 7px; background: none; cursor: pointer; display: block;
+  }
+  .cor input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+  .cor input[type="color"]::-webkit-color-swatch { border: none; border-radius: 5px; }
+  .cor b { display: block; font-size: 0.85rem; }
+  .cor small { color: var(--tinta-3); font-size: 0.74rem; }
+  .voltar-cores {
+    margin-top: 12px; background: none; border: 1px solid var(--borda);
+    border-radius: var(--raio); padding: 7px 12px; font-size: 0.82rem;
+    color: var(--tinta-2); cursor: pointer; font-family: inherit;
+  }
+  .voltar-cores:hover { border-color: var(--acento); color: var(--tinta); }
+  .dica-cores { font-size: 0.85rem; color: var(--tinta-2); margin: 0; }
+  .aviso-cor {
+    margin: 12px 0 0; font-size: 0.82rem; background: var(--alerta-suave);
+    border: 1px solid var(--alerta); color: var(--alerta);
+    border-radius: var(--raio); padding: 9px 11px;
+  }
+  .aviso-cor[hidden] { display: none; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--fundo);
+    color: var(--tinta);
+    line-height: 1.5;
+  }
+  header {
+    background: var(--tinta);
+    color: #fff;
+    padding: 20px 24px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  header p { margin: 0; color: #cfc7bd; font-size: 0.92rem; }
+  header .passos { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+  header .passo {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px;
+    padding: 5px 13px;
+    font-size: 0.85rem;
+  }
+  header .passo b { color: #ffc98f; }
+
+  .principal { display: flex; align-items: flex-start; gap: 22px; padding: 22px; }
+  .col-form { flex: 1 1 520px; max-width: 560px; }
+  .col-prev { flex: 1 1 420px; position: sticky; top: 22px; }
+
+  .acoes {
+    background: var(--papel);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    padding: 14px;
+    margin-bottom: 18px;
+  }
+  .acoes .linha { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--borda); background: var(--papel); color: var(--tinta); padding: 9px 15px; }
+  button:hover { border-color: var(--acento); color: var(--acento); }
+  button.principal-btn { background: var(--acento); color: #fff; border-color: var(--acento); font-weight: 700; padding: 11px 20px; }
+  button.principal-btn:hover { background: #7f4d30; color: #fff; }
+  button.perigo:hover { border-color: var(--erro); color: var(--erro); }
+
+  .status { display: flex; align-items: center; gap: 9px; font-size: 0.88rem; border-radius: 8px; padding: 9px 12px; }
+  .status.falta { background: var(--alerta-suave); color: var(--alerta); border: 1px solid #ecd9a8; }
+  .status.pronto { background: var(--ok-suave); color: var(--ok); border: 1px solid #b9dfc9; }
+
+  fieldset { border: 1px solid var(--borda); border-radius: var(--raio); background: var(--papel); padding: 16px; margin: 0 0 16px; }
+  legend { font-weight: 700; font-size: 0.95rem; padding: 0 8px; }
+  legend .ed { display: inline-block; background: var(--acento); color: #fff; border-radius: 5px; padding: 1px 7px; font-size: 0.72rem; margin-left: 7px; vertical-align: middle; }
+
+  .campo { margin-bottom: 13px; }
+  .campo:last-child { margin-bottom: 0; }
+  .campo label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 3px; }
+  .campo .ed { color: var(--acento); font-weight: 700; }
+  .campo .obrig { color: var(--erro); }
+  .campo .dica { font-size: 0.78rem; color: var(--tinta-3); margin-top: 3px; }
+  .campo input[type=text], .campo input[type=tel], .campo select, .campo textarea {
+    width: 100%;
+    font: inherit;
+    padding: 8px 10px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    background: #fdfcfb;
+    color: var(--tinta);
+  }
+  .campo textarea { min-height: 62px; resize: vertical; }
+  .campo input:focus, .campo textarea:focus, .campo select:focus { outline: 2px solid var(--acento-suave); border-color: var(--acento); }
+  .com-arquivo { display: flex; gap: 7px; align-items: center; }
+  .com-arquivo input[type=text] { flex: 1; }
+  .com-arquivo input[type=file] { font-size: 0.75rem; max-width: 150px; }
+
+  .item-lista { border: 1px dashed var(--borda); border-radius: 8px; padding: 11px; margin-bottom: 9px; background: #fcfbf9; }
+  .item-lista .cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .item-lista .cab b { font-size: 0.78rem; color: var(--tinta-3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .item-lista .mini { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .item-lista .mini .um { grid-column: 1 / -1; }
+  .item-lista input, .item-lista select, .item-lista textarea { width: 100%; font: inherit; font-size: 0.88rem; padding: 6px 8px; border: 1px solid var(--borda); border-radius: 6px; background: #fff; }
+  .item-lista button.remover { padding: 3px 9px; font-size: 0.75rem; }
+  .vazio-lista { color: var(--tinta-3); font-size: 0.85rem; font-style: italic; padding: 8px 0; }
+
+  .previa-caixa { background: var(--papel); border: 1px solid var(--borda); border-radius: var(--raio); overflow: hidden; }
+  .previa-topo { display: flex; justify-content: space-between; align-items: center; padding: 9px 13px; border-bottom: 1px solid var(--borda); background: #faf9f7; }
+  .previa-topo b { font-size: 0.85rem; }
+  .previa-topo span { font-size: 0.75rem; color: var(--tinta-3); }
+  iframe { width: 100%; height: 78vh; border: 0; display: block; background: #fff; }
+
+  .caixa { background: var(--papel); border: 1px solid var(--borda); border-radius: var(--raio); padding: 15px; margin-top: 16px; }
+  .caixa h2 { font-size: 0.95rem; margin: 0 0 10px; }
+  .caixa ol, .caixa ul { margin: 0; padding-left: 20px; font-size: 0.87rem; }
+  .caixa li { margin-bottom: 5px; }
+  .caixa code { background: var(--acento-suave); border-radius: 4px; padding: 1px 5px; font-size: 0.85em; }
+  .caixa .foto-nome { font-family: Consolas, monospace; background: #f2efe9; border-radius: 4px; padding: 1px 6px; }
+  .caixa .nada { color: var(--tinta-3); font-style: italic; font-size: 0.87rem; }
+  .caixa label.chk { display: flex; gap: 8px; align-items: flex-start; font-size: 0.87rem; margin-bottom: 8px; }
+  pre.codigo { background: #1e1b18; color: #e8e0d8; padding: 13px; border-radius: 8px; overflow: auto; max-height: 340px; font-size: 0.8rem; line-height: 1.5; }
+  .escondido { display: none !important; }
+  @media (max-width: 1000px) {
+    .principal { flex-direction: column; }
+    .col-form { max-width: none; }
+    .col-prev { position: static; width: 100%; }
+    iframe { height: 60vh; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Gerador de Portfólio</h1>
+  <p>Você preenche as caixas de texto. O site se monta sozinho. Não precisa mexer em código.</p>
+  <div class="passos">
+    <span class="passo"><b>1.</b> Preencha o que o cliente te deu</span>
+    <span class="passo"><b>2.</b> Clique em <b>Baixar meu site</b></span>
+    <span class="passo"><b>3.</b> Abra o arquivo baixado e veja o site pronto</span>
+  </div>
+</header>
+
+<div class="principal">
+
+  <!-- ============ COLUNA DA ESQUERDA: O FORMULARIO ============ -->
+  <div class="col-form">
+
+    <div class="acoes">
+      <div class="linha">
+        <button class="principal-btn" id="btn-baixar" type="button">Baixar meu site (index.html)</button>
+        <button id="btn-codigo" type="button">Ver o código</button>
+        <button id="btn-limpar" class="perigo" type="button">Limpar tudo</button>
+      </div>
+      <div class="status falta" id="status">Comece pelo nome e pela profissão.</div>
+    </div>
+
+    <div id="formulario"></div>
+
+    <div class="caixa">
+      <h2>Depois de baixar, o que fazer com as fotos</h2>
+      <div id="lista-fotos">
+        <span class="nada">Nenhuma foto usada ainda.</span>
+      </div>
+      <p style="font-size:0.85rem;color:var(--tinta-2);margin:10px 0 0">
+        Crie uma pasta no Computador, por exemplo <code>C:\portfolios\ana</code>.
+        Coloque o <code>index.html</code> baixado e todas as fotos dentro dela.
+        Depois é só dar dois cliques no <code>index.html</code>.
+      </p>
+    </div>
+
+    <div class="caixa">
+      <h2>O que o gerador já garante por você</h2>
+      <ul>
+        <li>Todo texto entra entre aspas, mesmo se você colar aspas ou barra.</li>
+        <li>Todo item de lista ganha a vírgula sozinho, menos o último.</li>
+        <li>Se um campo ficar vazio, o site simplesmente esconde aquele pedaço.</li>
+        <li>O arquivo baixado nunca sai quebrado.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ============ COLUNA DA DIREITA: A PREVIA AO VIVO ============ -->
+  <div class="col-prev">
+    <div class="previa-caixa">
+      <div class="previa-topo">
+        <b>Prévia do site</b>
+        <span>muda sozinho enquanto você digita</span>
+      </div>
+      <iframe id="previa" title="Prévia do portfólio"></iframe>
+    </div>
+
+    <div class="caixa">
+      <h2>Cores do site</h2>
+      <p class="dica-cores">
+        Escolha um conjunto pronto e depois ajuste o que quiser. As cores que ficam
+        sobrando (o tom clarinho do destaque e o brilho do topo) o gerador calcula
+        sozinho a partir da cor principal.
+      </p>
+      <div class="presets" id="presets-cores"></div>
+      <div class="cores">
+        <label class="cor" for="cor-acento">
+          <span class="amostra"><input type="color" id="cor-acento" data-cor="acento" value="#9a5f3c" /></span>
+          <span><b>Principal</b><small>botões e destaques</small></span>
+        </label>
+        <label class="cor" for="cor-acento2">
+          <span class="amostra"><input type="color" id="cor-acento2" data-cor="acento2" value="#c07d4f" /></span>
+          <span><b>Secundária</b><small>detalhes e links</small></span>
+        </label>
+        <label class="cor" for="cor-fundo">
+          <span class="amostra"><input type="color" id="cor-fundo" data-cor="fundo" value="#fdfcfa" /></span>
+          <span><b>Fundo</b><small>cor de trás</small></span>
+        </label>
+        <label class="cor" for="cor-fundo2">
+          <span class="amostra"><input type="color" id="cor-fundo2" data-cor="fundo2" value="#f6f2ee" /></span>
+          <span><b>Fundo 2</b><small>faixas e cartões</small></span>
+        </label>
+        <label class="cor" for="cor-tinta">
+          <span class="amostra"><input type="color" id="cor-tinta" data-cor="tinta" value="#1c1815" /></span>
+          <span><b>Texto</b><small>letras do site</small></span>
+        </label>
+      </div>
+      <p class="aviso-cor" id="aviso-contraste" hidden></p>
+      <button type="button" class="voltar-cores" id="btn-cores-padrao">Voltar para as cores originais</button>
+    </div>
+
+    <div class="caixa">
+      <h2>Escolha como quer entregar</h2>
+      <label class="chk"><input type="checkbox" id="op-instrucoes" checked />
+        <span><b>Manter as instruções dentro do site.</b> Bom para você continuar editando à mão depois. Desligue para entregar limpo ao cliente.</span></label>
+      <label class="chk"><input type="checkbox" id="op-tarja" />
+        <span><b>Tirar a tarja de "Protótipo".</b> Ligue quando o site estiver pronto para o cliente. Desligue enquanto você ainda está mexendo.</span></label>
+    </div>
+
+    <div class="caixa escondido" id="caixa-codigo">
+      <h2>O código que o gerador escreveu no seu lugar</h2>
+      <p style="font-size:0.85rem;color:var(--tinta-2);margin:0 0 9px">
+        Este é o bloco <code>DADOS</code> do arquivo baixado. Se um dia você quiser
+        mudar alguma coisa direto no Bloco de Notas, é aqui que mexe. Cada
+        <code>EDICAO</code> é um destes campos.
+      </p>
+      <pre class="codigo" id="pre-codigo"></pre>
+      <button id="btn-copiar" type="button">Copiar</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- O modelo do site fica guardado aqui, escondido. O gerador copia este texto
+     e troca o bloco DADOS pelo que você preencheu nas caixas. -->
+<script type="text/plain" id="modelo-site"><!DOCTYPE html>
 <!--
 =======================================================================
   LEIA-ME DO APRENDIZ
@@ -1225,4 +1519,630 @@
   <!-- Fim do corpo da página -->
   </body>
 <!-- Fim do documento HTML -->
+</html></script>
+
+<script>
+/* ======================================================================
+   GERADOR — esta parte é a máquina. Você não precisa mexer.
+   ====================================================================== */
+
+// ---- 1. O modelo do site, com as marcas de fechamento de script trocadas por @@S@@ ----
+const MODELO = document.getElementById('modelo-site').textContent
+  .split('@@S@@').join('</scr' + 'ipt>');
+
+// ---- 2. O que tem em cada caixa do formulário ----
+const CAMPOS = [
+  { secao: 'Quem é a cliente', ed: '01 a 07', itens: [
+    { k:'nome', ed:'01', rot:'Nome completo', ex:'Ana Beatriz Nogueira', obrig:true },
+    { k:'cargo', ed:'02', rot:'Profissão', ex:'Manicure e Designer de Unhas', obrig:true },
+    { k:'textoHero', ed:'07', rot:'Apresentação', tipo:'area', ex:'Atendo em casa e no estúdio. Agenda com hora marcada.' },
+    { k:'frase', ed:'06', rot:'Frase curta (aparece em itálico)', ex:'Unhas cuidadas, sempre no seu estilo' },
+    { k:'cidade', ed:'05', rot:'Cidade e estado', ex:'Goiânia - GO' },
+    { k:'rotulo', ed:'04', rot:'Etiqueta em cima do nome', ex:'Agenda aberta' },
+    { k:'iniciais', ed:'03', rot:'Iniciais do círculo do menu', dica:'Até 2 letras. Vazio: o site tira do nome.' }
+  ]},
+  { secao: 'Foto e contato', ed: '08 a 10', itens: [
+    { k:'foto', ed:'08', rot:'Foto principal', dica:'Escolha o arquivo para o nome aparecer sozinho, ou digite. A foto precisa estar na mesma pasta do site.', arquivo:true },
+    { k:'whatsapp', ed:'09', rot:'WhatsApp', ex:'55 61 98888-7777', tipo:'tel', obrig:true, dica:'Com DDD e código do país. O site limpa os números.' },
+    { k:'mapaUrl', ed:'10', rot:'Link do Google Maps', ex:'https://maps.google.com/?q=...', dica:'Cole o link que o Google Maps dá ao compartilhar. Vazio: o botão de rota some.' }
+  ]}
+];
+
+// ---- 3. As listas, que podem ter quantos itens você quiser ----
+const LISTAS = [
+  { k:'numeros', ed:'11', rot:'Números de destaque', vazio:'Ex.: 480 clientes atendidas, 6 anos de experiência.',
+    campos:[ ['valor','Número','480'], ['rotulo','Legenda','Clientes atendidas'] ] },
+  { k:'servicos', ed:'12', rot:'Serviços e preços', vazio:'Ex.: Mão de obra em gel — R$ 60 — 1h30.',
+    campos:[ ['nome','Nome do serviço','Mão de obra em gel'], ['preco','Preço','R$ 60'], ['duracao','Duração','1h30'], ['desc','Descrição','Durabilidade de até 3 semanas'] ] },
+  { k:'galeria', ed:'13', rot:'Galeria de trabalhos', vazio:'Ex.: Foto do finished, com a legenda.',
+    campos:[ ['imagem','Arquivo da foto','trabalho-1.jpg', true], ['titulo','Título','Cores da coleção'], ['desc','Legenda','Detalhes do acabamento'] ] },
+  { k:'avaliacoes', ed:'14', rot:'Depoimentos', vazio:'Ex.: nota 5, o texto, o nome da cliente.',
+    campos:[ ['nota','Nota (1 a 5, ou vazio)','5'], ['nome','Nome da cliente','Larissa M.'], ['detalhe','Frase pequena','Cliente desde 2024'], ['texto','Depoimento','Atendimento impecável, o desenho ficou como eu imaginei.','area'] ] },
+  { k:'info', ed:'15', rot:'Endereço e horários', vazio:'Ex.: Endereço, e Horário de funcionamento.',
+    campos:[ ['icone','Ícone','local', 'select'], ['titulo','Título','Endereço'], ['desc','Descrição','Rua das Flores, 120 - Goiânia'] ] }
+];
+
+// ---- 4. Onde ficam as coisas que você digitou ----
+const estado = { campos:{}, listas:{ numeros:[], servicos:[], galeria:[], avaliacoes:[], info:[] }, cores:{} };
+let itemNumero = 1;
+
+// ---- 4b. Cores: conjuntos prontos e contas de cor ----
+const CORES_PADRAO = { acento:'#9a5f3c', acento2:'#c07d4f', fundo:'#fdfcfa', fundo2:'#f6f2ee', tinta:'#1c1815' };
+const CHAVES_COR = ['acento','acento2','fundo','fundo2','tinta'];
+const PALETAS = [
+  { n:'Terracota',       acento:'#9a5f3c', acento2:'#c07d4f', fundo:'#fdfcfa', fundo2:'#f6f2ee', tinta:'#1c1815' },
+  { n:'Rosa',            acento:'#b23a63', acento2:'#e07a9d', fundo:'#fffafb', fundo2:'#fbeef2', tinta:'#2a151d' },
+  { n:'Lilás',           acento:'#6b4ea8', acento2:'#9a7fd4', fundo:'#fcfaff', fundo2:'#f2eefb', tinta:'#1f1830' },
+  { n:'Azul',            acento:'#1f5fa8', acento2:'#4f8fd6', fundo:'#f9fbff', fundo2:'#eaf1fa', tinta:'#101c2e' },
+  { n:'Verde',           acento:'#1f7a4d', acento2:'#4fb183', fundo:'#f9fdfa', fundo2:'#e9f5ee', tinta:'#12241b' },
+  { n:'Vinho',           acento:'#7a1f3d', acento2:'#b0506f', fundo:'#fff9fb', fundo2:'#f7e8ee', tinta:'#231019' },
+  { n:'Preto e dourado', acento:'#a8823a', acento2:'#d4af5f', fundo:'#fbfaf7', fundo2:'#f0ece2', tinta:'#1a1713' }
+];
+
+function hexParaRgb(hex) {
+  const h = String(hex).trim().replace('#','');
+  const n = h.length === 3 ? h.split('').map(function (c) { return c + c; }).join('') : h;
+  return [parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)];
+}
+function rgbParaHex(r) {
+  return '#' + r.map(function (v) {
+    const s = Math.max(0, Math.min(255, Math.round(v))).toString(16);
+    return s.length === 1 ? '0' + s : s;
+  }).join('');
+}
+// mistura a cor a com a cor b; pesoB = quanto da b entra (0 = só a, 1 = só b)
+function mistura(a, b, pesoB) {
+  const A = hexParaRgb(a), B = hexParaRgb(b);
+  return rgbParaHex([0, 1, 2].map(function (i) { return A[i] * (1 - pesoB) + B[i] * pesoB; }));
+}
+function comAlfa(hex, alfa) {
+  const c = hexParaRgb(hex);
+  return 'rgba(' + c[0] + ', ' + c[1] + ', ' + c[2] + ', ' + alfa + ')';
+}
+function luminancia(hex) {
+  const c = hexParaRgb(hex).map(function (v) {
+    v = v / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+function contraste(a, b) {
+  const la = luminancia(a), lb = luminancia(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+// Monta o pedaco de CSS que entra no site. O que ela escolhe vai por cima;
+// o que ela nao escolhe o gerador deduz para nao sobrar cor "errada" na pagina.
+function blocoCores() {
+  const c = estado.cores;
+  if (!CHAVES_COR.some(function (k) { return c[k]; })) return '';
+
+  const a  = c.acento  || CORES_PADRAO.acento;
+  const a2 = c.acento2 || CORES_PADRAO.acento2;
+  const fu = c.fundo    || CORES_PADRAO.fundo;
+  const f2 = c.fundo2   || CORES_PADRAO.fundo2;
+  const ti = c.tinta    || CORES_PADRAO.tinta;
+
+  const claro = [
+    '--fundo: ' + fu,
+    '--fundo-2: ' + f2,
+    '--superficie: ' + mistura(fu, '#ffffff', 0.8),
+    // a borda e a linha do texto: perto do fundo, nao perto da letra
+    '--borda: ' + mistura(ti, fu, 0.88),
+    '--tinta: ' + ti,
+    '--tinta-2: ' + mistura(ti, fu, 0.35),
+    '--tinta-3: ' + mistura(ti, fu, 0.55),
+    '--acento: ' + a,
+    '--acento-2: ' + a2,
+    // o tom clarinho do destaque: quase fundo, so um pouco da cor principal
+    '--acento-suave: ' + mistura(a, fu, 0.88),
+    '--sombra: 0 1px 2px ' + comAlfa(ti, 0.05) + ', 0 12px 32px ' + comAlfa(ti, 0.08),
+    '--sombra-forte: 0 24px 60px ' + comAlfa(ti, 0.16),
+    '--gradiente: radial-gradient(1000px 520px at 10% -10%, ' + comAlfa(a2, 0.14) + ', transparent 60%),\n          radial-gradient(800px 460px at 95% 0%, ' + comAlfa(a, 0.10) + ', transparent 55%)'
+  ];
+
+  // No tema escuro o fundo vira quase preto com um pouco da cor escolhida
+  const escuroA  = mistura(a, '#ffffff', 0.38);
+  const escuroA2 = mistura(a2, '#ffffff', 0.42);
+  const base     = mistura(a, '#0d0b0a', 0.94);
+  const escuro = [
+    '--fundo: ' + base,
+    '--fundo-2: ' + mistura(a, '#0d0b0a', 0.88),
+    '--superficie: ' + mistura(a, '#0d0b0a', 0.83),
+    '--borda: ' + mistura(a, '#0d0b0a', 0.72),
+    '--tinta: #f4efea',
+    // aqui as tintas apagam em direcao ao fundo escuro, como no tema claro
+    '--tinta-2: ' + mistura('#f4efea', base, 0.25),
+    '--tinta-3: ' + mistura('#f4efea', base, 0.45),
+    '--acento: ' + escuroA,
+    '--acento-2: ' + escuroA2,
+    '--acento-suave: ' + comAlfa(escuroA, 0.16),
+    '--sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.36)',
+    '--sombra-forte: 0 24px 60px rgba(0, 0, 0, 0.5)',
+    '--gradiente: radial-gradient(1000px 520px at 10% -10%, ' + comAlfa(escuroA2, 0.16) + ', transparent 60%),\n          radial-gradient(800px 460px at 95% 0%, ' + comAlfa(escuroA, 0.10) + ', transparent 55%)'
+  ];
+
+  return '\n      /* ===== CORES ESCOLHIDAS NO GERADOR (EDICAO 16) ===== */\n' +
+    "      html[data-tema='claro'] {\n        " + claro.join(';\n        ') + ';\n      }\n' +
+    "      html[data-tema='escuro'] {\n        " + escuro.join(';\n        ') + ';\n      }\n    ';
+}
+
+function marcarPreset(indice) {
+  const botoes = document.querySelectorAll('#presets-cores .preset');
+  for (let j = 0; j < botoes.length; j++) {
+    botoes[j].setAttribute('aria-pressed', j === indice ? 'true' : 'false');
+  }
+}
+
+function montarPresets() {
+  const alvo = document.getElementById('presets-cores');
+  if (!alvo) return;
+  alvo.innerHTML = PALETAS.map(function (p, i) {
+    return '<button type="button" class="preset" data-preset="' + i + '" aria-pressed="false">' +
+      '<span class="bolas"><i style="background:' + p.acento + '"></i>' +
+      '<i style="background:' + p.acento2 + '"></i><i style="background:' + p.fundo2 + '"></i></span>' +
+      p.n + '</button>';
+  }).join('');
+}
+
+function aplicarPaleta(indice) {
+  const p = PALETAS[indice];
+  if (!p) return;
+  CHAVES_COR.forEach(function (k) {
+    estado.cores[k] = p[k];
+    const el = document.querySelector('input[data-cor="' + k + '"]');
+    if (el) el.value = p[k];
+  });
+  marcarPreset(indice);
+  aoMudarCor();
+}
+
+function zerarCores() {
+  CHAVES_COR.forEach(function (k) {
+    delete estado.cores[k];
+    const el = document.querySelector('input[data-cor="' + k + '"]');
+    if (el) el.value = CORES_PADRAO[k];
+  });
+  const r = document.documentElement.style;
+  ['--acento', '--acento-suave', '--fundo', '--tinta'].forEach(function (v) { r.removeProperty(v); });
+  marcarPreset(-1);
+  aoMudarCor();
+}
+
+// O proprio gerador repinta a tela com a paleta escolhida, para ela ver o efeito
+function aplicarCoresNoGerador() {
+  const c = estado.cores;
+  const r = document.documentElement.style;
+  if (c.acento) {
+    r.setProperty('--acento', c.acento);
+    r.setProperty('--acento-suave', mistura(c.acento, '#ffffff', 0.9));
+  }
+  if (c.fundo) r.setProperty('--fundo', mistura(c.fundo, '#ffffff', 0.35));
+  // so repinta a tinta se ela continuar legivel no cabecalho escuro
+  if (c.tinta && contraste(c.tinta, '#ffffff') >= 3) r.setProperty('--tinta', c.tinta);
+}
+
+function atualizarAvisoCores() {
+  const alvo = document.getElementById('aviso-contraste');
+  if (!alvo) return;
+  const ti = estado.cores.tinta, fu = estado.cores.fundo;
+  if (!ti || !fu) { alvo.hidden = true; return; }
+  const razao = contraste(ti, fu);
+  if (razao < 4.5) {
+    alvo.hidden = false;
+    alvo.innerHTML = '<b>Aten&ccedil;&atilde;o:</b> o texto sobre o fundo d&aacute; contraste ' +
+      razao.toFixed(1) + ':1 e fica dif&iacute;cil de ler. Escolha um texto mais escuro ou um fundo mais claro.';
+  } else {
+    alvo.hidden = true;
+  }
+}
+
+function aoMudarCor() {
+  aplicarCoresNoGerador();
+  atualizarAvisoCores();
+  atualizarPrevia();
+}
+
+// ---- 5. Desenha o formulário na tela ----
+function montarFormulario() {
+  const alvo = document.getElementById('formulario');
+  let html = '';
+
+  CAMPOS.forEach((secao) => {
+    html += '<fieldset><legend>' + secao.secao + ' <span class="ed">EDICAO ' + secao.ed + '</span></legend>';
+    secao.itens.forEach((c) => { html += desenharCampo(c); });
+    html += '</fieldset>';
+  });
+
+  LISTAS.forEach((l) => {
+    html += '<fieldset><legend>' + l.rot + ' <span class="ed">EDICAO ' + l.ed + '</span></legend>';
+    html += '<div id="lista-' + l.k + '"></div>';
+    html += '<button type="button" data-add="' + l.k + '">+ Adicionar</button>';
+    html += '</fieldset>';
+  });
+
+  alvo.innerHTML = html;
+}
+
+function desenharCampo(c) {
+  const v = estado.campos[c.k] || '';
+  const id = 'c-' + c.k;
+  let controle;
+  if (c.tipo === 'area') {
+    controle = '<textarea id="' + id + '">' + escaparHtml(v) + '</textarea>';
+  } else {
+    const tipo = c.tipo === 'tel' ? 'tel' : 'text';
+    controle = '<input type="' + tipo + '" id="' + id + '" value="' + escaparHtml(v) + '" placeholder="' + escaparHtml(c.ex || '') + '" />';
+  }
+  let comArquivo = '';
+  if (c.arquivo) {
+    comArquivo = '<div class="com-arquivo">' + controle +
+      '<input type="file" data-pega="' + c.k + '" title="Escolher a foto" /></div>';
+  } else {
+    comArquivo = controle;
+  }
+  return '<div class="campo">' +
+    '<label for="' + id + '">' + c.rot +
+      ' <span class="ed">EDICAO ' + c.ed + '</span>' +
+      (c.obrig ? ' <span class="obrig">*</span>' : '') + '</label>' +
+    comArquivo +
+    (c.dica ? '<div class="dica">' + c.dica + '</div>' : '') +
+    '</div>';
+}
+
+function desenharListas() {
+  LISTAS.forEach((l) => {
+    const alvo = document.getElementById('lista-' + l.k);
+    const itens = estado.listas[l.k];
+    if (!itens.length) {
+      alvo.innerHTML = '<div class="vazio-lista">Nenhum item ainda. ' + escaparHtml(l.vazio) + '</div>';
+      return;
+    }
+    let html = '';
+    itens.forEach((item, indice) => {
+      html += '<div class="item-lista"><div class="cab"><b>Item ' + (indice + 1) + '</b>' +
+        '<button type="button" class="remover" data-remove="' + l.k + '" data-i="' + indice + '">Remover</button></div>' +
+        '<div class="mini">';
+      l.campos.forEach((c) => {
+        const chave = c[0], rot = c[1], ex = c[2], tipo = c[3];
+        const valor = item[chave] || '';
+        const comArquivo = tipo === true;
+        const grande = tipo === 'area' || comArquivo;
+        const id = 'l-' + l.k + '-' + indice + '-' + chave;
+        let controle;
+        if (tipo === 'area') {
+          controle = '<textarea id="' + id + '" placeholder="' + escaparHtml(ex) + '">' + escaparHtml(valor) + '</textarea>';
+        } else if (tipo === 'select') {
+          controle = '<select id="' + id + '"><option value="local"' + (valor === 'local' ? ' selected' : '') + '>local (endereço)</option>' +
+            '<option value="relogio"' + (valor === 'relogio' ? ' selected' : '') + '>relogio (horário)</option></select>';
+        } else if (comArquivo) {
+          controle = '<div class="com-arquivo"><input type="text" id="' + id + '" value="' + escaparHtml(valor) + '" placeholder="' + escaparHtml(ex) + '" />' +
+            '<input type="file" data-pega-lista="' + l.k + '" data-i="' + indice + '" data-campo="' + chave + '" /></div>';
+        } else {
+          controle = '<input type="text" id="' + id + '" value="' + escaparHtml(valor) + '" placeholder="' + escaparHtml(ex) + '" />';
+        }
+        html += '<div class="' + (grande ? 'um' : '') + '"><label for="' + id + '" style="font-size:0.78rem;color:var(--tinta-3)">' + rot + '</label>' + controle + '</div>';
+      });
+      html += '</div></div>';
+    });
+    alvo.innerHTML = html;
+  });
+}
+
+// ---- 6. Converte o que está na tela em texto de código, sem chance de erro ----
+function paraUmaLinha(valor) {
+  return String(valor == null ? '' : valor).replace(/\r?\n/g, ' ').trim();
+}
+
+function paraTexto(valor) {
+  return String(valor == null ? '' : valor)
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\r?\n/g, ' ')
+    .trim();
+}
+
+function gerarBlocoDados() {
+  const c = (k) => paraTexto(estado.campos[k]);
+  const lista = (k, chaves) => {
+    const itens = estado.listas[k]
+      .filter((item) => chaves.some((ch) => String(item[ch] || '').trim() !== ''))
+      .map((item) => {
+        const partes = chaves.map((ch) => ch + ': "' + paraTexto(item[ch]) + '"');
+        return '          { ' + partes.join(', ') + ' }';
+      });
+    return itens.length ? itens.join(',\n') : '          /* nenhum item cadastrado */';
+  };
+
+  const numeros = LISTAS.find((l) => l.k === 'numeros').campos.map((x) => x[0]);
+  const servicos = LISTAS.find((l) => l.k === 'servicos').campos.map((x) => x[0]);
+  const galeria = LISTAS.find((l) => l.k === 'galeria').campos.map((x) => x[0]);
+  const avaliacoes = LISTAS.find((l) => l.k === 'avaliacoes').campos.map((x) => x[0]);
+  const info = LISTAS.find((l) => l.k === 'info').campos.map((x) => x[0]);
+
+  return '      const DADOS = {\n' +
+    '        nome: "' + c('nome') + '", // EDICAO 01\n' +
+    '        cargo: "' + c('cargo') + '", // EDICAO 02\n' +
+    '        iniciais: "' + c('iniciais') + '", // EDICAO 03\n' +
+    '        rotulo: "' + c('rotulo') + '", // EDICAO 04\n' +
+    '        cidade: "' + c('cidade') + '", // EDICAO 05\n' +
+    '        frase: "' + c('frase') + '", // EDICAO 06\n' +
+    '        textoHero: "' + c('textoHero') + '", // EDICAO 07\n' +
+    '        foto: "' + c('foto') + '", // EDICAO 08\n' +
+    '        whatsapp: "' + c('whatsapp') + '", // EDICAO 09\n' +
+    '        mapaUrl: "' + c('mapaUrl') + '", // EDICAO 10\n' +
+    '        numeros: [\n' + lista('numeros', numeros) + '\n        ],\n' +
+    '        servicos: [\n' + lista('servicos', servicos) + '\n        ],\n' +
+    '        galeria: [\n' + lista('galeria', galeria) + '\n        ],\n' +
+    '        avaliacoes: [\n' + lista('avaliacoes', avaliacoes) + '\n        ],\n' +
+    '        info: [\n' + lista('info', info) + '\n        ]\n' +
+    '      };';
+}
+
+const RX_DADOS = /([\s\S]*?>>> DADOS_INICIO <<<[^\n]*\n)[ \t]*const DADOS = \{[\s\S]*?\n[ \t]*\};([ \t]*\r?\n[ \t]*\/\*[ \t]*<<< DADOS_FIM <<<)/;
+
+// Troca o bloco DADOS do modelo pelo que foi digitado. O grupo 1 termina
+// logo depois da linha de marca e o grupo 2 logo depois do fecha-chave de
+// DADOS, entao o bloco novo entra inteiro e nao se duplica.
+function trocarDados(origem) {
+  return origem.replace(RX_DADOS, function (achado, inicio, fim) {
+    return inicio + gerarBlocoDados() + fim;
+  });
+}
+
+// Troca o conteudo de uma tag procurando a ULTIMA ocorrencia dela.
+// O caminho comum (/<title>[\s\S]*?<\/title>/) quebrava porque o LEIA-ME,
+// que vem antes de tudo, mostra exemplos de <title> e de <h1>: o combinador
+// pegava o exemplo do LEIA-ME e ia ate a tag de verdade no <head>, levando
+// o <head>, o charset e o viewport junto. Aqui a busca e de tras para frente,
+// entao o exemplo do LEIA-ME nunca e confundido com o site.
+function substituirUltima(html, abre, fecha, conteudo) {
+  const i = html.lastIndexOf(abre);
+  if (i === -1) return html;
+  const j = html.indexOf(fecha, i + abre.length);
+  if (j === -1) return html;
+  return html.slice(0, i) + conteudo + html.slice(j + fecha.length);
+}
+
+function gerarSite() {  let html = trocarDados(MODELO);
+
+  const nome = escaparHtml(paraUmaLinha(estado.campos.nome));
+  const cargo = escaparHtml(paraUmaLinha(estado.campos.cargo));
+  const frase = escaparHtml(paraUmaLinha(estado.campos.frase) || paraUmaLinha(estado.campos.textoHero));
+  const titulo = nome ? (cargo ? nome + ' | ' + cargo : nome) : 'Portf\u00f3lio';
+
+  html = substituirUltima(html, '<title>', '</title>', '<title>' + titulo + '</title>');
+  html = html.replace(/(<meta\s+name="description"\s+content=")[^"]*(")/, function (a, p1, p2) {
+    return p1 + (frase || 'Portf\u00f3lio') + p2;
+  });
+
+  if (nome) html = substituirUltima(html, '<h1 id="hero-nome">', '</h1>', '<h1 id="hero-nome">' + nome + '</h1>');
+  if (nome) html = substituirUltima(html, '<div class="moldura-topo" id="moldura-topo">', '</div>', '<div class="moldura-topo" id="moldura-topo">Foto de ' + nome + '</div>');
+
+  // Tira a tarja de "Prot\u00f3tipo". As regras usam [^{}] para parar no fecha-chaves
+  // da propria regra, e comecam em nova linha porque o LEIA-ME cita o mesmo texto.
+  // O (?: \*/ [ \t]* )? engole o fim de comentario que pode ficar grudado na regra.
+  if (document.getElementById('op-tarja').checked) {
+    html = html.replace(/\r?\n[ \t]*<div class="aviso-prototipo">[\s\S]*?<\/div>[ \t]*\r?\n?/g, '');
+    html = html.replace(/\r?\n[ \t]*(?:\*\/[ \t]*)?\.aviso-prototipo \{[^{}]*\}[ \t]*(\/\*[^*]*\*\/)?[ \t]*\r?\n?/g, '');
+    html = html.replace(/\r?\n[ \t]*(?:\*\/[ \t]*)?\.aviso-prototipo b \{[^{}]*\}[ \t]*(\/\*[^*]*\*\/)?[ \t]*\r?\n?/g, '');
+    html = html.replace(/\.aviso-prototipo, /g, '');
+    html = html.replace(', \.aviso-prototipo \{', ' {');
+  }
+
+  // A paleta escolhida entra depois das regras do modelo, entao ganha por
+  // cascata. Menos arriscado do que reescrever os blocos originais.
+  const bloco = blocoCores();
+  if (bloco) {
+    const pos = html.lastIndexOf('</' + 'style>');
+    if (pos !== -1) html = html.slice(0, pos) + bloco + html.slice(pos);
+  }
+
+  // Rede de seguranca: se alguma troca estragou a pagina, volta ao modelo inteiro
+  // e refaz so o DADOS. Melhor um site sem tarja do que um site sem CSS.
+  const dadosOk = (html.match(/const DADOS = \{/g) || []).length === 1;
+  if (!dadosOk || html.indexOf('<style>') === -1 || html.indexOf('</html>') === -1) {
+    console.warn('Alguma troca estragou o arquivo; voltando ao modelo inteiro.');
+    const tit = html.match(/<title>[\s\S]*?<\/title>/);
+    let seguro = trocarDados(MODELO);
+    if (tit) seguro = seguro.replace(/<title>[\s\S]*?<\/title>/, function () { return tit[0]; });
+    const posSeguro = seguro.lastIndexOf('</' + 'style>');
+    if (bloco && posSeguro !== -1) seguro = seguro.slice(0, posSeguro) + bloco + seguro.slice(posSeguro);
+    html = seguro;
+  }
+
+  // Tira o LEIA-ME de dentro do arquivo
+  if (!document.getElementById('op-instrucoes').checked) {
+    html = html.replace(/(<!DOCTYPE html>)[ \t]*\r?\n[ \t]*<!--[\s\S]*?-->[ \t]*\r?\n/, function (a, d) { return d + String.fromCharCode(10); });
+  }
+
+  return html;
+}
+
+// ---- 7. Prévia ao vivo, sem travar a digitação ----
+let temporizador = null;
+function atualizarPrevia() {
+  clearTimeout(temporizador);
+  temporizador = setTimeout(function () {
+    const pronto = gerarSite();
+    document.getElementById('previa').srcdoc = pronto;
+    atualizarStatus();
+    atualizarFotos();
+    const caixa = document.getElementById('caixa-codigo');
+    if (!caixa.classList.contains('escondido')) document.getElementById('pre-codigo').textContent = gerarBlocoDados();
+  }, 450);
+}
+
+function atualizarStatus() {
+  const alvo = document.getElementById('status');
+  const falta = [];
+  if (!String(estado.campos.nome || '').trim()) falta.push('o nome');
+  if (!String(estado.campos.cargo || '').trim()) falta.push('a profissão');
+  if (!String(estado.campos.whatsapp || '').trim()) falta.push('o WhatsApp');
+  if (falta.length) {
+    alvo.className = 'status falta';
+    alvo.textContent = 'Falta preencher: ' + falta.join(', ') + '. Dá para ver a prévia assim mesmo.';
+  } else {
+    alvo.className = 'status pronto';
+    alvo.textContent = 'Tudo pronto. Pode clicar em "Baixar meu site".';
+  }
+}
+
+function atualizarFotos() {
+  const alvo = document.getElementById('lista-fotos');
+  const nomes = [];
+  if (String(estado.campos.foto || '').trim()) nomes.push(estado.campos.foto.trim());
+  estado.listas.galeria.forEach((i) => { if (String(i.imagem || '').trim()) nomes.push(i.imagem.trim()); });
+  if (!nomes.length) { alvo.innerHTML = '<span class="nada">Nenhuma foto usada ainda.</span>'; return; }
+  let html = '<p style="font-size:0.85rem;margin:0 0 6px">Copie estes arquivos para a mesma pasta do site:</p><ul>';
+  nomes.forEach((n) => {
+    const temBarra = n.indexOf('/') >= 0 || n.indexOf('\\') >= 0;
+    html += '<li><span class="foto-nome">' + escaparHtml(n) + '</span>' +
+      (temBarra ? ' <span style="color:var(--erro)">tira a pasta, escreve só o nome do arquivo</span>' : '') + '</li>';
+  });
+  alvo.innerHTML = html + '</ul>';
+}
+
+// ---- 8. Liga os botões ----
+document.addEventListener('click', function (ev) {
+  const b = ev.target;
+  if (b.dataset && b.dataset.add) {
+    estado.listas[b.dataset.add].push({ __id: itemNumero++ });
+    desenharListas();
+    atualizarPrevia();
+    return;
+  }
+  if (b.dataset && b.dataset.remove) {
+    estado.listas[b.dataset.remove].splice(Number(b.dataset.i), 1);
+    desenharListas();
+    atualizarPrevia();
+    return;
+  }
+  // Conjunto de cores pronto
+  const paletinha = b.closest ? b.closest('.preset') : null;
+  if (paletinha) { aplicarPaleta(Number(paletinha.dataset.preset)); return; }
+
+});
+
+document.addEventListener('input', function (ev) {
+  const alvo = ev.target;
+  if (alvo.dataset && alvo.dataset.pega) return;
+  // Pintores de cor: cada um cuida de uma cor e a previa repinta na hora
+  if (alvo.dataset && alvo.dataset.cor) {
+    estado.cores[alvo.dataset.cor] = alvo.value;
+    marcarPreset(-1);
+    aoMudarCor();
+    return;
+  }
+  if (!alvo.id) return;
+
+  // Campos simples
+  if (alvo.id.indexOf('c-') === 0) {
+    estado.campos[alvo.id.slice(2)] = alvo.value;
+    atualizarPrevia();
+    return;
+  }
+  // Itens de lista: l-lista-indice-chave
+  const partes = /^l-([a-z]+)-(\d+)-(.+)$/.exec(alvo.id);
+  if (partes) {
+    const lista = estado.listas[partes[1]];
+    if (lista && lista[Number(partes[2])]) {
+      lista[Number(partes[2])][partes[3]] = alvo.value;
+      atualizarPrevia();
+    }
+  }
+});
+
+document.addEventListener('change', function (ev) {
+  const alvo = ev.target;
+  if (alvo.dataset && alvo.dataset.pega) {
+    const arq = alvo.files && alvo.files[0];
+    if (!arq) return;
+    estado.campos[alvo.dataset.pega] = arq.name;
+    document.getElementById('c-' + alvo.dataset.pega).value = arq.name;
+    atualizarPrevia();
+    return;
+  }
+  if (alvo.dataset && alvo.dataset.pegaLista) {
+    const arq = alvo.files && alvo.files[0];
+    if (arq) {
+      const item = estado.listas[alvo.dataset.pegaLista][Number(alvo.dataset.i)];
+      if (item) { item[alvo.dataset.campo] = arq.name; desenharListas(); atualizarPrevia(); }
+    }
+    return;
+  }
+  if (alvo.id === 'op-tarja' || alvo.id === 'op-instrucoes') { atualizarPrevia(); }
+});
+
+document.getElementById('btn-baixar').addEventListener('click', function () {
+  const html = gerarSite();
+  const arquivo = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(arquivo);
+  link.download = 'index.html';
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(function () { URL.revokeObjectURL(link.href); link.remove(); }, 1500);
+});
+
+document.getElementById('btn-codigo').addEventListener('click', function () {
+  const caixa = document.getElementById('caixa-codigo');
+  caixa.classList.toggle('escondido');
+  if (!caixa.classList.contains('escondido')) {
+    document.getElementById('pre-codigo').textContent = gerarBlocoDados();
+    caixa.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+});
+
+document.getElementById('btn-copiar').addEventListener('click', function () {
+  const caixa = document.getElementById('pre-codigo');
+  const txt = caixa.textContent;
+  const aviso = function (ok) {
+    const b = document.getElementById('btn-copiar');
+    b.textContent = ok ? 'Copiado!' : 'Selecione e copie com Ctrl+C';
+    setTimeout(function () { b.textContent = 'Copiar'; }, 1800);
+  };
+  const seleciona = function () {
+    const r = document.createRange();
+    r.selectNodeContents(caixa);
+    const s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+    return s.toString() === txt;
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function () { aviso(true); }, function () {
+      aviso(seleciona() && document.execCommand('copy'));
+    });
+  } else {
+    aviso(seleciona() && document.execCommand('copy'));
+  }
+});
+
+document.getElementById('btn-cores-padrao').addEventListener('click', zerarCores);
+
+document.getElementById('btn-limpar').addEventListener('click', function () {
+  if (!confirm('Apagar tudo que você preencheu?')) return;
+  estado.campos = {};
+  LISTAS.forEach((l) => { estado.listas[l.k] = []; });
+  zerarCores();
+  montarFormulario();
+  desenharListas();
+  atualizarPrevia();
+});
+
+function escaparHtml(t) {
+  return String(t == null ? '' : t)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ---- 9. Começa tudo ----
+montarFormulario();
+montarPresets();
+desenharListas();
+atualizarPrevia();
+</script>
+
+</body>
 </html>
