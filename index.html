@@ -489,12 +489,16 @@
         .secao { padding: 66px 0; }
         .grade-3, .galeria, .avaliacoes { grid-template-columns: 1fr; }
         .zap-flutuante { right: 14px; bottom: 14px; width: 52px; height: 52px; }
-      } /* Ajustes de layout para smartphones */
+        button, .btn, .preset { min-height: 44px; }
+  .preset { font-size: 0.95rem; padding-top: 8px; padding-bottom: 8px; }
+  label, legend, small, .dica, .mini { font-size: 0.95rem; }
+  .bolas i { width: 17px; height: 17px; }
+} /* Ajustes de layout para smartphones */
 
       /* ==========================================================
          15. IMPRESSÃO
          ========================================================== */
-      @media print {
+@media print {
         .progresso, .topo, .zap-flutuante, .hero-acoes, .aviso-prototipo { display: none !important; }
         body { background: #fff; }
         .secao { padding: 24px 0; }
