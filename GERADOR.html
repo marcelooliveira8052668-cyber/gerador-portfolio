@@ -312,7 +312,7 @@
   3. O QUE VOCE VAI MEXER
      So dentro do bloco DADOS, bem no fim deste arquivo.
      Cada linha para mexer tem uma marca com dois numeros:
-        EDICAO 01, EDICAO 02, EDICAO 03 ... EDICAO 15
+        EDICAO 01, EDICAO 02, EDICAO 03 ... EDICAO 16
      A marca EDICAO e a sua referencia. NAO confie no numero da linha,
      porque o numero da linha muda sozinho toda vez que voce digita.
      A marca EDICAO nunca muda.
@@ -381,6 +381,26 @@
       name="description"
       content="Modelo em branco de página de profissional. Preencha o bloco DADOS com os dados do cliente."
     />
+    <!-- Ícone da aba do navegador. O script troca pelo desenho com as iniciais do cliente. -->
+    <link rel="icon" id="favicon-site" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%239a5f3c'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='30' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E" />
+
+    <!-- ============================================================
+         COMPARTILHAMENTO (WhatsApp, Instagram, Facebook)
+         É isto que aparece na prévia quando alguém manda o link.
+         Preenchido pelo gerador com os dados do cliente.
+         ============================================================ -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content="P&#225;gina de profissional" />
+    <meta property="og:description" content="Modelo em branco de p&#225;gina de profissional." />
+    <meta property="og:image" content="" />
+    <meta property="og:url" content="" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="P&#225;gina de profissional" />
+    <meta name="twitter:description" content="Modelo em branco de p&#225;gina de profissional." />
+
+    <!-- Endere&#231;o final do site. Vazio = o site ainda n&#227;o foi publicado. -->
+    <link rel="canonical" id="link-canonico" href="" />
 
     <!-- Conexão antecipada com o servidor de fontes do Google para otimizar o carregamento -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -463,6 +483,27 @@
         padding: 2px 9px;
         cursor: pointer;
       } /* Botão de fechar o painel */
+
+      /* ==========================================================
+         LINK DE PULAR PARA O CONTEUDO
+         Escondido ate alguem usar o teclado.
+         ========================================================== */
+
+      .pular-para-conteudo {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        z-index: 9999;
+        padding: 12px 20px;
+        background: var(--acento);
+        color: #fff;
+        border-radius: 0 0 10px 0;
+        font-weight: 600;
+      }
+
+      .pular-para-conteudo:focus {
+        left: 0;
+      }
 
       /* ==========================================================
          1. VARIÁVEIS
@@ -806,6 +847,9 @@
 
   <!-- Início do corpo visível da página HTML -->
   <body>
+
+    <!-- Pular direto para o conteudo (teclado e leitor de tela). -->
+    <a class="pular-para-conteudo" href="#conteudo">Pular para o conteudo</a>
     <!-- ==========================================================
          TARJA DE PROTÓTIPO
          Apague este bloco inteiro quando for publicar o site do cliente.
@@ -894,7 +938,7 @@
     </header>
 
     <!-- Início do conteúdo principal da página (main) -->
-    <main id="inicio">
+    <main id="conteudo">
       <!-- ===================== HERO ===================== -->
       <!-- Início da seção principal de introdução (Hero) -->
       <section class="hero">
@@ -1159,6 +1203,7 @@
         textoHero: "", // EDICAO 07 - a apresentacao um pouco mais longa, 1 ou 2 frases
         foto: "", // EDICAO 08 - SO o nome do arquivo da foto, que tem que estar na mesma pasta. Ex.: "foto.jpg". Vazio: fica o quadrado decorativo
         whatsapp: "", // EDICAO 09 - o numero do WhatsApp, SO digitos. Ex.: "5561999999999". Vazio: os botoes de WhatsApp somem
+        url: "", // EDICAO 16 - o endereco final do site, depois de publicado. Ex.: "https://ana.netlify.app". Vazio: o Google adota o endereco da pagina.
         mapaUrl: "", // EDICAO 10 - o link do Google Maps, colado inteiro. Vazio: o botao de rota some
         numeros: [
           // EDICAO 11 - os numeros de destaque em cima da foto.
@@ -1266,6 +1311,18 @@
           .toUpperCase()
         : '');
       texto('marca-ponto', iniciais);
+
+      /* O icone da aba do navegador usa as iniciais do cliente */
+      const icone = document.getElementById('favicon-site');
+      if (icone) {
+        const cor = getComputedStyle(document.documentElement)
+          .getPropertyValue('--acento').trim() || '#9a5f3c';
+        const svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
+          + "<rect width='64' height='64' rx='14' fill='" + cor + "'/>"
+          + "<text x='32' y='44' font-family='Arial' font-size='30' font-weight='bold' "
+          + "fill='#ffffff' text-anchor='middle'>" + iniciais + "</text></svg>";
+        icone.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
+      }
       texto('marca-nome', DADOS.nome);
       texto('marca-cargo', DADOS.cargo);
       // Se não houver nome, some com o logotipo inteiro
@@ -1349,7 +1406,7 @@
           .map((g) => {
             // Usa a foto cadastrada ou mantém o quadro reservado
             const foto = g.imagem
-              ? `<div class="espaco-foto"><img src="${esc(g.imagem)}" alt="${esc(g.titulo || 'Foto do trabalho')}" /></div>`
+              ? `<div class="espaco-foto"><img src="${esc(g.imagem)}" alt="${esc(g.titulo || 'Foto do trabalho')}" loading="lazy" decoding="async" /></div>`
               : `<div class="espaco-foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><b>Foto do trabalho</b></div>`;
             // A legenda só aparece se houver título ou descrição
             const legenda = g.titulo || g.desc
@@ -1544,7 +1601,8 @@ const CAMPOS = [
   { secao: 'Foto e contato', ed: '08 a 10', itens: [
     { k:'foto', ed:'08', rot:'Foto principal', dica:'Escolha o arquivo para o nome aparecer sozinho, ou digite. A foto precisa estar na mesma pasta do site.', arquivo:true },
     { k:'whatsapp', ed:'09', rot:'WhatsApp', ex:'55 61 98888-7777', tipo:'tel', obrig:true, dica:'Com DDD e código do país. O site limpa os números.' },
-    { k:'mapaUrl', ed:'10', rot:'Link do Google Maps', ex:'https://maps.google.com/?q=...', dica:'Cole o link que o Google Maps dá ao compartilhar. Vazio: o botão de rota some.' }
+    { k:'mapaUrl', ed:'10', rot:'Link do Google Maps', ex:'https://maps.google.com/?q=...', dica:'Cole o link que o Google Maps dá ao compartilhar. Vazio: o botão de rota some.' },
+    { k:'url', ed:'16', rot:'Endereço final do site', ex:'https://ana.netlify.app', dica:'Cole aqui o endereço depois de publicar. O Google e o WhatsApp usam este para mostrar o site certo. Vazio: o site funciona do mesmo jeito.' }
   ]}
 ];
 
@@ -1871,6 +1929,7 @@ function gerarBlocoDados() {
     '        foto: "' + c('foto') + '", // EDICAO 08\n' +
     '        whatsapp: "' + c('whatsapp') + '", // EDICAO 09\n' +
     '        mapaUrl: "' + c('mapaUrl') + '", // EDICAO 10\n' +
+    '        url: "' + c('url') + '", // EDICAO 16\n' +
     '        numeros: [\n' + lista('numeros', numeros) + '\n        ],\n' +
     '        servicos: [\n' + lista('servicos', servicos) + '\n        ],\n' +
     '        galeria: [\n' + lista('galeria', galeria) + '\n        ],\n' +
@@ -1915,6 +1974,40 @@ function gerarSite() {  let html = trocarDados(MODELO);
   html = html.replace(/(<meta\s+name="description"\s+content=")[^"]*(")/, function (a, p1, p2) {
     return p1 + (frase || 'Portf\u00f3lio') + p2;
   });
+
+  /* Mesma coisa nas etiquetas de compartilhamento: sao elas que aparecem
+     na previa do WhatsApp e do Instagram quando o link e mandado. */
+  html = html.replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/, function (a, p1, p2) {
+    return p1 + titulo + p2;
+  });
+  html = html.replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/, function (a, p1, p2) {
+    return p1 + (frase || 'Portf\u00f3lio') + p2;
+  });
+  html = html.replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/, function (a, p1, p2) {
+    return p1 + titulo + p2;
+  });
+  html = html.replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/, function (a, p1, p2) {
+    return p1 + (frase || 'Portf\u00f3lio') + p2;
+  });
+
+  /* A foto da cliente vira a previa do link */
+  const fotoCliente = estado.campos.foto ? String(estado.campos.foto).trim() : '';
+  if (fotoCliente) {
+    html = html.replace(/(<meta\s+property="og:image"\s+content=")[^"]*(")/, function (a, p1, p2) {
+      return p1 + fotoCliente + p2;
+    });
+  }
+
+  /* O endereco final, se a pessoa preencheu */
+  const endereco = estado.campos.url ? String(estado.campos.url).trim() : '';
+  if (endereco) {
+    html = html.replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/, function (a, p1, p2) {
+      return p1 + endereco + p2;
+    });
+    html = html.replace(/(<link\s+rel="canonical"\s+id="link-canonico"\s+href=")[^"]*(")/, function (a, p1, p2) {
+      return p1 + endereco + p2;
+    });
+  }
 
   if (nome) html = substituirUltima(html, '<h1 id="hero-nome">', '</h1>', '<h1 id="hero-nome">' + nome + '</h1>');
   if (nome) html = substituirUltima(html, '<div class="moldura-topo" id="moldura-topo">', '</div>', '<div class="moldura-topo" id="moldura-topo">Foto de ' + nome + '</div>');

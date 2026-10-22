@@ -21,11 +21,11 @@ formulário, escolhe as cores, clica num botão e entrega.
 | Arquivo | Para que serve |
 |---|---|
 | `GERADOR.html` | **É este que você abre.** O gerador propriamente dito. |
-| `index.html` | O site modelo em branco, com as instruções dentro. Você **não** precisa mexer nele. |
 | `exemplo-cliente/` | Um site já pronto, feito com o gerador, para você ver como fica. |
 | `COMO-USAR.md` | Este passo a passo. |
 | `CROQUI.html` | Um desenho do caminho todo, para você se orientar. |
 | `PUBLICAR.md` | Como colocar o site no ar depois de pronto. |
+| `index.html` | A página de venda do gerador. É o que o cliente abre primeiro. Você não precisa mexer nele. |
 
 > **Nunca abra o `GERADOR.html` com Word ou Google Docs.**
 > Word salva com sujeira invisível e estraga o arquivo. Abra com o
@@ -192,6 +192,20 @@ arquivo é a "roupa" do site: mexer ali é o jeito mais rápido de quebrá-lo.
 
 ---
 
+## 8b. O endereço final do site
+
+Depois de publicar, você volta no gerador e escreve o endereço do site no campo
+**"Endereço final do site"** (na parte *Foto e contato*). Com ele preenchido:
+
+- o Google sabe qual é o endereço oficial da cliente;
+- o WhatsApp e o Instagram mostram a prévia certa quando alguém compartilha.
+
+Vazio? O site funciona do mesmo jeito. Mas, se a cliente já tem um site antigo no
+ar, colocar o endereço novo aqui evita que as duas versões fiquem brigando no
+Google.
+
+---
+
 ## 9. Problemas que podem acontecer
 
 | O que você vê | O que fazer |
@@ -219,6 +233,11 @@ arquivo é a "roupa" do site: mexer ali é o jeito mais rápido de quebrá-lo.
   `</html>`. Se alguma troca estragar alguma coisa, ele avisa e volta ao
   modelo inteiro — é melhor um site sem personalização do que um site sem
   roupa.
+- O site já sai com **ícone de aba** (o desenho com as iniciais da cliente).
+- O link já sai com **prévia de rede social**: quando a cliente mandar no
+  WhatsApp, aparece o nome, a frase e a foto dela em vez de um link seco.
+- Tem **acessibilidade**: botão de pular para o conteúdo, foco visível no
+  teclado e aviso automático quando o contraste fica ruim.
 
 ---
 

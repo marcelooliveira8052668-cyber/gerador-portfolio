@@ -41,6 +41,12 @@ Três regras que não dá para quebrar:
 
 ---
 
+## Antes de entregar: escreva o endereço do site
+
+Na volta, abra o gerador de novo, escreva o endereço novo no campo
+**"Endereço final do site"** e baixe o `index.html` de novo. É esse passo que
+faz o Google e o WhatsApp mostrarem a prévia certa da cliente.
+
 ## Duas coisas para desligar antes de entregar
 
 No gerador, na parte **Escolha como quer entregar**, ligue **Tirar a tarja de
@@ -149,6 +155,7 @@ Percorra tudo. Leva dois minutos e evita a vergonha.
 - [ ] Não tem tarja de "Protótipo".
 - [ ] Não tem o bloco de instruções.
 - [ ] Não tem painel amarelo de "falta preencher".
+- [ ] O campo "Endereço final do site" está com o endereço novo.
 
 **A aparência**
 
